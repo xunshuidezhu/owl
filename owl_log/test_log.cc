@@ -1,11 +1,11 @@
 #include "log.h"
 #include <iostream>
 
-owllog::Log* g_p_default_Log = NULL;
+owllog::Log* OWL = NULL;
 int main()
 {
     static owllog::Log mylog("./log/my.log");
-    g_p_default_Log = &mylog;
+    OWL = &mylog;
     mylog.start();
 
     debug_log("this is a(n) debug log");
