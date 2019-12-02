@@ -11,7 +11,7 @@
 
 using namespace std;
 namespace net {
-int current_thread[10];
+static int current_thread[10];
 }
 namespace owl {
 namespace base {

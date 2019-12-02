@@ -24,7 +24,7 @@ namespace base {
         Mutex& mutex;
         pthread_cond_t cond;
     };
-} //namespace base
-} //namespace owl
+} // namespace base
+} // namespace owl
 
 #endif // OWL_BASE_THRAD_CONDITION

@@ -1,6 +1,6 @@
 #ifndef OWL_BASE_MUTEX_RAII_H
 #define OWL_BASE_MUTEX_RAII_H
-#include "noncopyable.h"
+#include "noncopyable.hpp"
 #include "thread_mutex.h"
 
 namespace owl {

@@ -16,7 +16,7 @@ void Mutex::destroy()
     pthread_mutex_destroy(&mutex);
 }
 
-Mutex::Mutex(string name = "default")
+Mutex::Mutex(string name)
 {
     init();
     set_mutex_name(name);

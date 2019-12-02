@@ -1,6 +1,6 @@
 #ifndef OWL_BASE_COUNT_DOWN_LATCH
 #define OWL_BASE_COUNT_DOWN_LATCH
-#include "noncopyable.h"
+#include "noncopyable.hpp"
 #include "thread_condition.h"
 #include "thread_mutex.h"
 
@@ -18,3 +18,4 @@ private:
     Condition cond;
 };
 #endif // OWL_BASE_COUNT_DOWN_LATCH
+
