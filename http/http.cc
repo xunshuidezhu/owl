@@ -33,7 +33,6 @@ int get_line(int sock, char* buf, int size)
 void unimplemented(int client)
 {
     char buf[1024];
-
     sprintf(buf, "HTTP/1.0 501 Method Not Implemented\r\n");
     send(client, buf, strlen(buf), 0);
     sprintf(buf, "Server: owl \r\n");
@@ -119,7 +118,7 @@ void accept_request(void* arg)
     }
     j = i;
     method[i] = '\0';
-
+    //不是Get或者post方法
     if (strcasecmp(method, "GET") && strcasecmp(method, "POST")) {
         unimplemented(client);
         return;
