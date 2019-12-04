@@ -19,7 +19,7 @@ class EventDemultiplexer {
 public:
     virtual ~EventDemultiplexer() {}
 
-    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, TimerContainer*, callback& c) = 0;
+    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, HeapTimerContainer*) = 0;
 
     virtual exit_t addEvent(handle_t handle, event_t event) = 0;
 
@@ -32,7 +32,7 @@ class EpollEventDemultiplexer : public EventDemultiplexer {
 public:
     EpollEventDemultiplexer();
 
-    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, TimerContainer*, callback& c) override;
+    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, HeapTimerContainer*) override;
 
     virtual exit_t addEvent(handle_t handle, event_t event_t) override;
 

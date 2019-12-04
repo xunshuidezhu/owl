@@ -6,6 +6,7 @@
 #include <sys/epoll.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 using namespace reactor;
 
@@ -65,10 +66,10 @@ exit_t EpollEventDemultiplexer::delEvent(handle_t handle)
     return success;
 }
 
-int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handlers, int timeout, TimerContainer* timer, callback& c)
+int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handlers, int timeout, HeapTimerContainer* timer)
 {
     epoll_event epollEvents[_fd_num];
-
+    struct timeval tv;
     int num = epoll_wait(_epoll_fd, epollEvents, _fd_num, timeout);
     if (num > 0) {
         for (int i = 0; i < _fd_num; i++) {
@@ -90,8 +91,8 @@ int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handle
             }
         }
     }
-    if (timer->haveTimer()) {
-        timer->doCallback(c);
+    if (timer) {
+        timer->tick();
     }
     return success;
 }

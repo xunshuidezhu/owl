@@ -220,7 +220,7 @@ void badRequest(int client)
     sprintf(buf, "such as a POST without a Content-Length.\r\n");
     send(client, buf, sizeof(buf), 0);
 }
-
+#define DEBUG
 #ifdef DEBUG
 int main()
 {

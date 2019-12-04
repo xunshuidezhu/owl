@@ -69,12 +69,17 @@ Reactor::ReactorImpl::ReactorImpl()
 void Reactor::ReactorImpl::handlerEvent()
 {
     int timeout = 0;
-    if (_eventTimer->haveTimer()) {
+    if (_eventTimer) {
         // 如果有计时器
+        struct timeval timeTop;
+        _eventTimer->top(timeTop);
+        struct timeval now;
+        gettimeofday(&now, 0);
+        timeout = timeTop.tv_sec - now.tv_sec;
     } else {
-        timeout = 0;
+        timeout = -1;
     }
-    _eventDemultiplexer->waitEvent(&_handlers, timeout, _eventTimer, cb);
+    _eventDemultiplexer->waitEvent(&_handlers, timeout, _eventTimer);
 }
 
 int Reactor::ReactorImpl::registerHandler(EventHandler* handler, event_t event)
@@ -105,6 +110,6 @@ int Reactor::ReactorImpl::registerTimerTask(HeapTimer* timerEvent)
         return fail;
     }
 
-    _eventTimer->addTimer(timerEvent);
+    _eventTimer->add_timer(timerEvent);
     return success;
 }
