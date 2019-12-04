@@ -60,6 +60,7 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "algorithm": "cpp",
-        "memory": "cpp"
+        "memory": "cpp",
+        "coroutine.h": "c"
     }
 }

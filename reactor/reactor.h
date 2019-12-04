@@ -4,7 +4,7 @@
 #include <sys/epoll.h>
 
 #include "timer.h"
-#include "demultiplexer.h"
+
 
 typedef int handle_t;
 
@@ -16,7 +16,7 @@ enum event_t {
     eventMask = 0xff
 };
 }
-
+using namespace reactor;
 class EventHandler {
 public:
     virtual handle_t getHandle() const = 0;

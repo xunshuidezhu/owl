@@ -42,7 +42,7 @@ struct coroutine {
 //协程初始化
 struct coroutine* _co_new(struct schedule* S, coroutine_func func, void* ud)
 {
-    struct coroutine* co = malloc(sizeof(*co));
+    struct coroutine* co = (struct coroutine*)malloc(sizeof(*co));
     co->func = func;
     co->ud = ud;
     co->sch = S;
@@ -64,7 +64,7 @@ void _co_delete(struct coroutine* co)
 struct schedule* coroutine_open(void)
 {
     //动态创建调度器
-    struct schedule* S = malloc(sizeof(*S));
+    struct schedule* S = (struct schedule*)malloc(sizeof(*S));
     //调度器管理的协程数量是0
     S->nco = 0;
     //容量默认是１６
@@ -72,7 +72,7 @@ struct schedule* coroutine_open(void)
     //协程运行标志
     S->running = -1;
     //创建容量个携程内存,存容量个协程指针
-    S->co = malloc(sizeof(struct coroutine*) * S->cap);
+    S->co = (struct coroutine**)malloc(sizeof(struct coroutine*) * S->cap);
     //初始化置０
     memset(S->co, 0, sizeof(struct coroutine*) * S->cap);
     //返回调度器
@@ -111,7 +111,7 @@ int coroutine_new(struct schedule* S, coroutine_func func, void* ud)
     if (S->nco >= S->cap) {
         int id = S->cap;
         //协程空间扩容2倍（存的是协程指针）
-        S->co = realloc(S->co, S->cap * 2 * sizeof(struct coroutine*));
+        S->co = (struct coroutine**)realloc(S->co, S->cap * 2 * sizeof(struct coroutine*));
         //新扩容的协程空间置0
         memset(S->co + S->cap, 0, sizeof(struct coroutine*) * S->cap);
         //添加新创建的协程
@@ -168,8 +168,7 @@ void coroutine_resume(struct schedule* S, int id)
     //判断协程状态
     switch (status) {
     // 协程准备好的状态
-    case COROUTINE_READY:
-        // 获取要执行的协程的上下文
+    case COROUTINE_READY: {
         getcontext(&C->ctx);
         // 分配栈空间
         C->ctx.uc_stack.ss_sp = S->stack;
@@ -187,14 +186,19 @@ void coroutine_resume(struct schedule* S, int id)
         //切换上下文到协程
         swapcontext(&S->main, &C->ctx);
         break;
+    }
+        // 获取要执行的协程的上下文
+
     //挂起协程状态
-    case COROUTINE_SUSPEND:
+    case COROUTINE_SUSPEND: {
         //把协程的栈放在栈后面
         memcpy(S->stack + STACK_SIZE - C->size, C->stack, C->size);
         S->running = id;
         C->status = COROUTINE_RUNNING;
         swapcontext(&S->main, &C->ctx);
         break;
+    }
+
     default:
         assert(0);
     }
@@ -208,7 +212,7 @@ static void _save_stack(struct coroutine* C, char* top)
     if (C->cap < top - &dummy) {
         free(C->stack);
         C->cap = top - &dummy;
-        C->stack = malloc(C->cap);
+        C->stack = (char*)malloc(C->cap);
     }
     C->size = top - &dummy;
     memcpy(C->stack, &dummy, C->size);

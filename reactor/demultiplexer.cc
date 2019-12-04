@@ -2,11 +2,12 @@
 #include "reactor.h"
 #include "timer.h"
 
+#include "../coroutine/coroutine.h"
 #include <errno.h>
 #include <sys/epoll.h>
 #include <sys/fcntl.h>
-#include <unistd.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 using namespace reactor;
 
@@ -66,9 +67,32 @@ exit_t EpollEventDemultiplexer::delEvent(handle_t handle)
     return success;
 }
 
+#pragma(pack) 1
+struct Arg {
+    std::map<handle_t, EventHandler*>* handlers;
+    handle_t handle;
+};
+
+void coroutineFuncRead(struct schedule*, void* ud)
+{
+    Arg* arg = (Arg*)ud;
+    handle_t handle = arg->handle;
+    std::map<handle_t, EventHandler*>* handlers = arg->handlers;
+    (*handlers)[handle]->handleRead();
+}
+
+void coroutineFuncWrite(struct schedule*, void* ud)
+{
+    Arg* arg = (Arg*)ud;
+    handle_t handle = arg->handle;
+    std::map<handle_t, EventHandler*>* handlers = arg->handlers;
+    (*handlers)[handle]->handleWrite();
+}
+
 int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handlers, int timeout, HeapTimerContainer* timer)
 {
     epoll_event epollEvents[_fd_num];
+    schedule* s = coroutine_open();
     struct timeval tv;
     int num = epoll_wait(_epoll_fd, epollEvents, _fd_num, timeout);
     if (num > 0) {
@@ -83,10 +107,16 @@ int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handle
                 (*handlers)[handle]->handleError();
             } else {
                 if (epollEvents[i].events & EPOLLIN) {
-                    (*handlers)[handle]->handleRead();
+                    struct Arg arg;
+                    arg.handle = handle;
+                    arg.handlers = handlers;
+                    coroutine_new(s, coroutineFuncRead, (void*)&arg);
                 }
                 if (epollEvents[i].events & EPOLLOUT) {
-                    (*handlers)[handle]->handleWrite();
+                    struct Arg arg;
+                    arg.handle = handle;
+                    arg.handlers = handlers;
+                    coroutine_new(s, coroutineFuncWrite, (void*)&arg);
                 }
             }
         }

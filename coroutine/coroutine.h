@@ -1,11 +1,6 @@
-#ifndef C_COROUTINE_H
-#define C_COROUTINE_H
-#ifndef cpp
-#define cpp
-#endif
-#define _cplusplus cpp
-#ifdef _cplusplus
-extern "C" {
+#ifndef COROUTINE_H
+#define COROUTINE_H
+
 #define COROUTINE_DEAD 0
 #define COROUTINE_READY 1
 #define COROUTINE_RUNNING 2
@@ -16,6 +11,7 @@ enum {
     RUNNING = 2,
     SUSPEND = 3
 } Status;
+
 struct schedule;
 
 typedef void (*coroutine_func)(struct schedule*, void* ud);
@@ -28,6 +24,5 @@ void coroutine_resume(struct schedule*, int id);
 int coroutine_status(struct schedule*, int id);
 int coroutine_running(struct schedule*);
 void coroutine_yield(struct schedule*);
-}
 
 #endif
