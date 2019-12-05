@@ -1,5 +1,7 @@
 #include "demultiplexer.h"
+#include "blockingQueue.h"
 #include "reactor.h"
+#include "threadpool.h"
 #include "timer.h"
 
 #include "../coroutine/coroutine.h"
@@ -11,6 +13,7 @@
 
 using namespace reactor;
 
+MutexGuard m;
 int EpollEventDemultiplexer::_epoll_size = 10;
 
 EpollEventDemultiplexer::EpollEventDemultiplexer()
@@ -89,6 +92,74 @@ void coroutineFuncWrite(struct schedule*, void* ud)
     (*handlers)[handle]->handleWrite();
 }
 
+void* producer(void* q)
+{
+    Queue* queue = (Queue*)q;
+    Data d;
+    while (1) {
+        m._mutex->lock();
+        while (queue->is_full()) {
+            cout << "queue is full, wait for the consumer..." << endl;
+            m._mutex->wait_write();
+        }
+        Arg* arg = (Arg*)q;
+        handle_t handle = arg->handle;
+        std::map<handle_t, EventHandler*>* handlers = arg->handlers;
+        d.handle = handle;
+        queue->enQueue(d);
+        m._mutex->notify_read();
+
+        m._mutex->unlock();
+    }
+    return 0;
+}
+
+void* consumer(void* q)
+{
+    Queue* queue = (Queue*)q;
+    while (1) {
+        m._mutex->lock();
+        while (queue->is_empty()) {
+            cout << "queue is  empty, wait for the producer..." << endl;
+            m._mutex->wait_read();
+        }
+        Arg* arg = (Arg*)q;
+        Data data = queue->deQueue();
+        std::map<handle_t, EventHandler*>* handlers = arg->handlers;
+        (*handlers)[data.handle]->handleWrite();
+        m._mutex->notify_write();
+
+        m._mutex->unlock();
+    }
+    return 0;
+}
+
+class CMyTaskWrite : public CTask {
+public:
+    CMyTaskWrite() = default;
+    Arg* arg = (Arg*)m_ptrData;
+    handle_t handle = arg->handle;
+    std::map<handle_t, EventHandler*>* handlers = arg->handlers;
+    int Run()
+    {
+        (*handlers)[handle]->handleWrite();
+    }
+    ~CMyTaskWrite() {}
+};
+
+class CMyTaskRead : public CTask {
+public:
+    CMyTaskRead() = default;
+    Arg* arg = (Arg*)m_ptrData;
+    handle_t handle = arg->handle;
+    std::map<handle_t, EventHandler*>* handlers = arg->handlers;
+    int Run()
+    {
+        (*handlers)[handle]->handleRead();
+    }
+    ~CMyTaskRead() {}
+};
+CThreadPool g_threadpool(10);
 int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handlers, int timeout, HeapTimerContainer* timer)
 {
     epoll_event epollEvents[_fd_num];
@@ -110,13 +181,19 @@ int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handle
                     struct Arg arg;
                     arg.handle = handle;
                     arg.handlers = handlers;
-                    coroutine_new(s, coroutineFuncRead, (void*)&arg);
+                    //coroutine_new(s, coroutineFuncRead, (void*)&arg);
+                    CMyTaskRead taskRead;
+                    taskRead.setData((void*)&arg);
+                    g_threadpool.AddTask(&taskRead);
                 }
                 if (epollEvents[i].events & EPOLLOUT) {
                     struct Arg arg;
                     arg.handle = handle;
                     arg.handlers = handlers;
-                    coroutine_new(s, coroutineFuncWrite, (void*)&arg);
+                    //coroutine_new(s, coroutineFuncWrite, (void*)&arg);
+                    CMyTaskWrite taskWrite;
+                    taskWrite.setData((void*)&arg);
+                    g_threadpool.AddTask(&taskWrite);
                 }
             }
         }

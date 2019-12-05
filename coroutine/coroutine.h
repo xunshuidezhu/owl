@@ -5,6 +5,7 @@
 #define COROUTINE_READY 1
 #define COROUTINE_RUNNING 2
 #define COROUTINE_SUSPEND 3
+
 enum {
     DEAD = 0,
     READY = 1,
@@ -26,3 +27,4 @@ int coroutine_running(struct schedule*);
 void coroutine_yield(struct schedule*);
 
 #endif
+0
