@@ -4,7 +4,7 @@
 #include "threadpool.h"
 #include "timer.h"
 
-#include "../coroutine/coroutine.h"
+#include "coroutine/coroutine.h"
 #include <errno.h>
 #include <sys/epoll.h>
 #include <sys/fcntl.h>
@@ -48,7 +48,9 @@ exit_t EpollEventDemultiplexer::addEvent(handle_t handle, event_t event)
     epollEvent.events |= EPOLLONESHOT;
 
     if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, handle, &epollEvent) != 0) {
-        if (errno == ENOENT) {
+        //FIXME:若没有，则添加，没有进判断
+        // if (errno == ENOENT) {
+        if (1) {
             if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, handle, &epollEvent) != 0) {
                 return fail;
             }
@@ -159,11 +161,11 @@ public:
     }
     ~CMyTaskRead() {}
 };
-CThreadPool g_threadpool(10);
-int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handlers, int timeout, HeapTimerContainer* timer)
+
+int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handlers, int timeout, HeapTimerContainer* timer, ThreadPool& threadpool)
 {
     epoll_event epollEvents[_fd_num];
-    schedule* s = coroutine_open();
+    // schedule* s = coroutine_open();
     struct timeval tv;
     int num = epoll_wait(_epoll_fd, epollEvents, _fd_num, timeout);
     if (num > 0) {
@@ -182,23 +184,25 @@ int EpollEventDemultiplexer::waitEvent(std::map<handle_t, EventHandler*>* handle
                     arg.handle = handle;
                     arg.handlers = handlers;
                     //coroutine_new(s, coroutineFuncRead, (void*)&arg);
-                    CMyTaskRead taskRead;
-                    taskRead.setData((void*)&arg);
-                    g_threadpool.AddTask(&taskRead);
+                    // CMyTaskRead taskRead;
+                    // taskRead.setData((void*)&arg);
+                    //threadpool.AddTask(&taskRead);
+                    (*handlers)[handle]->handleRead();
                 }
                 if (epollEvents[i].events & EPOLLOUT) {
                     struct Arg arg;
                     arg.handle = handle;
                     arg.handlers = handlers;
                     //coroutine_new(s, coroutineFuncWrite, (void*)&arg);
-                    CMyTaskWrite taskWrite;
-                    taskWrite.setData((void*)&arg);
-                    g_threadpool.AddTask(&taskWrite);
+                    // CMyTaskWrite taskWrite;
+                    // taskWrite.setData((void*)&arg);
+                    //threadpool.AddTask(&taskWrite);
+                    (*handlers)[handle]->handleWrite();
                 }
             }
         }
     }
-    if (timer) {
+    if (!timer->empty()) {
         timer->tick();
     }
     return success;

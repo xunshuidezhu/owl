@@ -1,6 +1,7 @@
 #include "reactor.h"
 #include "demultiplexer.h"
 #include "timer.h"
+#include "pool.h"
 
 #include <map>
 
@@ -22,17 +23,27 @@ public:
 
     int registerTimerTask(HeapTimer* timerEvent);
 
+    void startThreadpool();
+
 private:
     EventDemultiplexer* _eventDemultiplexer;
 
     std::map<handle_t, EventHandler*> _handlers;
 
     HeapTimerContainer* _eventTimer;
+
+    ThreadPool threadpool;
 };
 /****************************Reactor*************************************/
 Reactor::Reactor()
 {
     _reactorImpl = new ReactorImpl();
+    printf("reactor construct %d", __LINE__);
+}
+
+void Reactor::startThreadpool()
+{
+    _reactorImpl->startThreadpool();
 }
 
 Reactor::~Reactor()
@@ -62,14 +73,20 @@ int Reactor::registerTimerTask(HeapTimer* timer)
 /*****************************ReactorImpl**********************************/
 Reactor::ReactorImpl::ReactorImpl()
 {
+    printf("reactorImpl construct %d", __LINE__);
     _eventDemultiplexer = new EpollEventDemultiplexer();
     _eventTimer = new HeapTimerContainer();
+}
+
+void Reactor::ReactorImpl::startThreadpool()
+{
+    //threadpool.Create();
 }
 
 void Reactor::ReactorImpl::handlerEvent()
 {
     int timeout = 0;
-    if (_eventTimer) {
+    if (!_eventTimer->empty()) {
         // 如果有计时器
         struct timeval timeTop;
         _eventTimer->top(timeTop);
@@ -79,7 +96,7 @@ void Reactor::ReactorImpl::handlerEvent()
     } else {
         timeout = -1;
     }
-    _eventDemultiplexer->waitEvent(&_handlers, timeout, _eventTimer);
+    _eventDemultiplexer->waitEvent(&_handlers, timeout, _eventTimer, threadpool);
 }
 
 int Reactor::ReactorImpl::registerHandler(EventHandler* handler, event_t event)

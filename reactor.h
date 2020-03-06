@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 
 #include "timer.h"
+#include "threadpool.h"
 
 
 typedef int handle_t;
@@ -36,7 +37,7 @@ public:
 class Reactor {
 public:
     class ReactorImpl;
-
+    //CThreadPool threadpool;
 private:
     ReactorImpl* _reactorImpl;
 
@@ -52,6 +53,8 @@ public:
     void handlerEvent();
 
     int registerTimerTask(HeapTimer* timer);
+
+    void startThreadpool();
 
 private:
     Reactor(const Reactor&) {} // 禁止拷贝

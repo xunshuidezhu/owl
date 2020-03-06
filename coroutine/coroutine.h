@@ -27,4 +27,4 @@ int coroutine_running(struct schedule*);
 void coroutine_yield(struct schedule*);
 
 #endif
-0
+

@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "debug hello world",    //名称
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.out",    //当前目录下编译后的可执行文件
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",    //表示当前目录
+            "environment": [],
+            "externalConsole": false, // 在vscode自带的终端中运行，不打开外部终端
+            "MIMode": "gdb",    //用gdb来debug
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build hello world"  //在执行debug hello world前，先执行build hello world这个task，看第4节
+        }
+    ]
+}

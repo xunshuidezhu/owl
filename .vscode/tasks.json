@@ -1,0 +1,18 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build hello world",     // task的名字
+            "type": "shell",   
+            "command": "g++",    //编译命令
+            "args": [    //编译参数列表
+                "-g", // 加上-g可以断点调试
+                "main.cpp",
+                "-o",
+                "main.out"
+            ]
+        }
+    ]
+}

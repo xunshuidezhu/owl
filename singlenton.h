@@ -4,7 +4,7 @@
 template <class T>
 class Singleton {
 public:
-    static inline T* instance();
+    inline static  T* instance();
     void release();
 
 protected:

@@ -22,22 +22,22 @@ int main()
     char szTmp[] = "hello!";
     taskObj.setData((void*)szTmp);
     CThreadPool threadpool(5); //线程池大小为5
+    printf("as");
+    // for (int i = 0; i < 10; i++)
+    //     threadpool.AddTask(&taskObj);
 
-    for (int i = 0; i < 10; i++)
-        threadpool.AddTask(&taskObj);
-
-    while (1) {
-        printf("There are still %d tasks need to handle\n", threadpool.getTaskSize());
-        //任务队列已没有任务了
-        if (threadpool.getTaskSize() == 0) {
-            //清除线程池
-            if (threadpool.StopAll() == -1) {
-                printf("Thread pool clear, exit.\n");
-                exit(0);
-            }
-        }
-        sleep(2);
-        printf("2 seconds later...\n");
-    }
+    // while (1) {
+    //     printf("There are still %d tasks need to handle\n", threadpool.getTaskSize());
+    //     //任务队列已没有任务了
+    //     if (threadpool.getTaskSize() == 0) {
+    //         //清除线程池
+    //         if (threadpool.StopAll() == -1) {
+    //             printf("Thread pool clear, exit.\n");
+    //             exit(0);
+    //         }
+    //     }
+    //     sleep(2);
+    //     printf("2 seconds later...\n");
+    // }
     return 0;
 }

@@ -2,8 +2,9 @@
 #define DEMULTIPLEXER_H
 
 #include "reactor.h"
+#include "threadpool.h"
 #include "timer.h"
-
+#include "pool.h"
 #include <map>
 
 namespace reactor {
@@ -19,7 +20,7 @@ class EventDemultiplexer {
 public:
     virtual ~EventDemultiplexer() {}
 
-    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, HeapTimerContainer*) = 0;
+    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, HeapTimerContainer*, ThreadPool& threadpool) = 0;
 
     virtual exit_t addEvent(handle_t handle, event_t event) = 0;
 
@@ -32,7 +33,7 @@ class EpollEventDemultiplexer : public EventDemultiplexer {
 public:
     EpollEventDemultiplexer();
 
-    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, HeapTimerContainer*) override;
+    virtual int waitEvent(std::map<handle_t, EventHandler*>*, int timeout, HeapTimerContainer*, ThreadPool& threadpool) override;
 
     virtual exit_t addEvent(handle_t handle, event_t event_t) override;
 

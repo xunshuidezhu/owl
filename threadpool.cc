@@ -15,8 +15,9 @@ pthread_cond_t CThreadPool::m_pthreadCond = PTHREAD_COND_INITIALIZER;
 CThreadPool::CThreadPool(int threadNum)
 {
     this->m_iThreadNum = threadNum;
-    printf("I will create %d threads.\n", threadNum);
-    Create();
+    printf("start");
+    printf("I will create %d threads.\n ", threadNum);
+    printf("start");
 }
 
 //线程回调函数
@@ -71,7 +72,6 @@ int CThreadPool::Create()
     pthread_id = new pthread_t[m_iThreadNum];
     for (int i = 0; i < m_iThreadNum; i++)
         pthread_create(&pthread_id[i], NULL, ThreadFunc, NULL);
-
     return 0;
 }
 

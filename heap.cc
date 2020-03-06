@@ -10,7 +10,7 @@ public:
     int data;
 
 public:
-    void add(int);
+    virtual void add(int);
     void pop();
     int top();
     Heap();
