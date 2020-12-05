@@ -1,5 +1,0 @@
-2019-09-16 2:39:14 test_log.cc:11|main <DEBUG> this is a(n) debug log
-2019-09-16 2:39:14 <INFO> this is a(n) info log
-2019-09-16 2:39:14 test_log.cc:13|main <WARN> this is a(n) warn log
-2019-09-16 2:39:14 test_log.cc:14|main <ERR> this is a(n) error log
-2019-09-16 2:39:14 test_log.cc:15|main <FATAL> this is a(n) fatal log

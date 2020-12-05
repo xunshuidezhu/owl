@@ -1,7 +1,0 @@
-package echo;
-
-message EchoString
-{
-    required string content = 1;
-    required int32 id       = 2;
-};
